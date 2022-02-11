@@ -33,39 +33,39 @@ $router->group([
 ], function () use ($router) {
     // Users
     $router->group(['prefix' => 'users'], function () use ($router) {
-        $router->get('', ['middleware' => 'permission:show users', 'uses' => 'UserController@index']);
-        $router->post('', ['middleware' => 'permission:create users', 'uses' => 'UserController@store']);
-        $router->get('{id}', ['middleware' => 'permission:show users', 'uses' => 'UserController@show']);
-        $router->patch('{id}/update', ['middleware' => 'permission:update users', 'uses' => 'UserController@update']);
-        $router->delete('{id}/delete', ['middleware' => 'permission:delete users', 'uses' => 'UserController@delete']);
+        $router->get('', 'UserController@index');
+        $router->post('', 'UserController@store');
+        $router->get('{id}', 'UserController@show');
+        $router->patch('{id}/update', 'UserController@update');
+        $router->delete('{id}/delete', 'UserController@delete');
     });
 
     // Permissions
     $router->group(['prefix' => 'permissions'], function () use ($router) {
-        $router->get('', ['middleware' => 'permission:show permissions', 'uses' => 'PermissionController@index']);
+        $router->get('', 'PermissionController@index');
     });
 
     // Roles
     $router->group(['prefix' => 'roles'], function () use ($router) {
-        $router->get('', ['middleware' => 'permission:show roles', 'uses' => 'RoleController@index']);
-        $router->post('', ['middleware' => 'permission:create roles', 'uses' => 'RoleController@store']);
-        $router->get('{id}', ['middleware' => 'permission:show roles', 'uses' => 'RoleController@show']);
-        $router->patch('{id}/update', ['middleware' => 'permission:update roles', 'uses' => 'RoleController@update']);
-        $router->delete('{id}/delete', ['middleware' => 'permission:delete roles', 'uses' => 'RoleController@delete']);
+        $router->get('', 'RoleController@index');
+        $router->post('', 'RoleController@store');
+        $router->get('{id}', 'RoleController@show');
+        $router->patch('{id}/update', ['middleware' => 'permission:update roles', 'uses' => 'RoleController@update');
+        $router->delete('{id}/delete', ['middleware' => 'permission:delete roles', 'uses' => 'RoleController@delete');
     });
 
     // Measurements
     $router->group(['prefix' => 'measurements'], function () use ($router) {
         $router->get('', 'MeasurementController@index');
-        $router->post('', ['middleware' => 'permission:create measurements', 'uses' => 'MeasurementController@store']);
-        $router->patch('{id}/update', ['middleware' => 'permission:update measurements', 'uses' => 'MeasurementController@update']);
-        $router->delete('{id}/delete', ['middleware' => 'permission:delete measurements', 'uses' => 'MeasurementController@delete']);
+        $router->post('', 'MeasurementController@store');
+        $router->patch('{id}/update', 'MeasurementController@update');
+        $router->delete('{id}/delete', 'MeasurementController@delete');
 
-        $router->get('detection', ['middleware' => 'permission:show measurements', 'uses' => 'MeasurementController@detection']);
-        $router->post('merge', ['middleware' => 'permission:show measurements', 'uses' => 'MeasurementController@merge']);
-        $router->post('autosuggestion', ['middleware' => 'permission:merge measurements', 'uses' => 'MeasurementController@autosuggestion']);
+        $router->get('detection', 'MeasurementController@detection');
+        $router->post('merge', 'MeasurementController@merge');
+        $router->post('autosuggestion', 'MeasurementController@autosuggestion');
     });
 
     // Export
-    $router->get('export', ['middleware' => 'permission:export measurements', 'uses' => 'ExportController@export']);
+    $router->get('export', 'ExportController@export');
 });
