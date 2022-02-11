@@ -17,7 +17,7 @@ $router->get('/', function () use ($router) {
     return response()->json([
         'status' => 200,
         'type' => 'rest',
-        'version' => 1
+        'version' => 1.1
     ]);
 });
 
@@ -50,8 +50,8 @@ $router->group([
         $router->get('', 'RoleController@index');
         $router->post('', 'RoleController@store');
         $router->get('{id}', 'RoleController@show');
-        $router->patch('{id}/update', ['middleware' => 'permission:update roles', 'uses' => 'RoleController@update');
-        $router->delete('{id}/delete', ['middleware' => 'permission:delete roles', 'uses' => 'RoleController@delete');
+        $router->patch('{id}/update', 'RoleController@update');
+        $router->delete('{id}/delete', 'RoleController@delete');
     });
 
     // Measurements
