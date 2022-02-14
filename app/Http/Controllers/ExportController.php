@@ -38,19 +38,17 @@ class ExportController extends Controller
     protected function prepareData(array $filters) : array
     {
         $headers = ['Data', 'Waga', 'Netto', 'Brutto', 'Produkt', 'Numery pojazdu', 'Klient', 'Kierowca'];
-//        $data = $this->measurementInterface->allWithPagination(100000, $filters)->toArray()['data'];
-//        $data = Measurement::all()->toArray();
 
         $data = Measurement::orderBy('id', 'desc')->select(
             'date', 'unit', 'netto', 'brutto', 'product', 'plate', 'customer', 'driver'
         );
 
         if (isset($filters['from']) and !empty($filters['from'])) {
-            $data->whereDate('created_at', '>=', $filters['from']);
+            $data->whereDate('created_at', '>=', new Carbon($filters['from']));
         }
 
         if (isset($filters['to']) and !empty($filters['to'])) {
-            $data->whereDate('created_at', '<=', $filters['to']);
+            $data->whereDate('created_at', '<=', new Carbon($filters['to']));
         }
 
         if (isset($filters['unit']) and !empty($filters['unit'])) {
