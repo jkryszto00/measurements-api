@@ -44,11 +44,11 @@ class ExportController extends Controller
         );
 
         if (isset($filters['from']) and !empty($filters['from'])) {
-            $data->whereDate('created_at', '>=', new Carbon($filters['from']));
+            $data->whereDate('date', '>=', new Carbon($filters['from']));
         }
 
         if (isset($filters['to']) and !empty($filters['to'])) {
-            $data->whereDate('created_at', '<=', new Carbon($filters['to']));
+            $data->whereDate('date', '<=', new Carbon($filters['to']));
         }
 
         if (isset($filters['unit']) and !empty($filters['unit'])) {

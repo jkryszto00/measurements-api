@@ -19,11 +19,11 @@ class MeasurementRepository implements MeasurementInterface
         $measurements = Measurement::with('attachments', 'modifiedBy')->orderBy('id', 'desc');
 
         if (isset($filters['from']) and !empty($filters['from'])) {
-            $measurements->whereDate('created_at', '>=', new Carbon($filters['from']));
+            $measurements->whereDate('date', '>=', new Carbon($filters['from']));
         }
 
         if (isset($filters['to']) and !empty($filters['to'])) {
-            $measurements->whereDate('created_at', '<=', new Carbon($filters['to']));
+            $measurements->whereDate('date', '<=', new Carbon($filters['to']));
         }
 
         if (isset($filters['unit']) and !empty($filters['unit'])) {
