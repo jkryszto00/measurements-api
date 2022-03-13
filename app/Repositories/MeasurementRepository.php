@@ -138,6 +138,11 @@ class MeasurementRepository implements MeasurementInterface
                 'id' => $measurement->modifiedBy->id,
                 'email' => $measurement->modifiedBy->email
             ],
+            'attachments' => $measurement->attachments->map(function ($attachment) {
+                return [
+                    'url' => $attachment->url
+                ];
+            }),
             'updated_at' => $measurement->updated_at,
             'created_at' => $measurement->created_at,
             'deleted_at' => $measurement->deleted_at

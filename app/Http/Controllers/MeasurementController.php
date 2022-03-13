@@ -67,31 +67,61 @@ class MeasurementController extends Controller
 
     public function merge(Request $request)
     {
-        $measurements = Measurement::whereIn('id', $request->input('measurements'))->get();
+        $measurements = Measurement::whereIn('id', $request->input('measurements'))->with('attachments')->get();
 
-        if (count($measurements) == 2 and empty($measurements[0]->netto) and empty($measurements[1]->netto)) {
-            $higher = ($measurements[0]->brutto > $measurements[1]->brutto) ? $measurements[0] : $measurements[1];
-            $lower = ($measurements[1]->brutto > $measurements[0]->brutto) ? $measurements[0] : $measurements[1];
-
-            if ($this->measurementInterface->delete($lower->id)) {
-                return response()->json([
-                    'status' => 201,
-                    'message' => 'Scalowanie pomiarów przebiegło pomyślnie',
-                    'measurement' => $this->measurementInterface->update($higher->id, [
-                        'netto' => ($higher->brutto - $lower->brutto),
-                        'product' => $higher->product.', '.$lower->product,
-                        'plate' => $higher->plate.', '.$lower->plate,
-                        'customer' => $higher->customer.', '.$lower->customer,
-                        'driver' => $higher->driver.', '.$lower->driver
-                    ])
-                ]);
+        if (
+            count($measurements) == 2
+            and empty($measurements[0]->netto)
+            and empty($measurements[1]->netto)
+            and !empty($measurements[0]->brutto)
+            and !empty($measurements[1]->brutto)
+        ) {
+            if ($measurements[0]->brutto == $measurements[1]->brutto) {
+                $higher = $measurements[0];
+                $lower = $measurements[1];
+            } else {
+                $higher = ($measurements[0]->brutto > $measurements[1]->brutto) ? $measurements[0] : $measurements[1];
+                $lower = ($measurements[1]->brutto > $measurements[0]->brutto) ? $measurements[0] : $measurements[1];
             }
+
+            foreach ($lower->attachments as $attachment) {
+                $attachment->update(['measurement_id' => $higher->id]);
+            }
+
+            $measurement = $this->measurementInterface->update($higher->id, [
+                'netto' => $higher->brutto - $lower->brutto,
+                'product' => $this->mergeValues($higher->product, $lower->product),
+                'plate' => $this->mergeValues($higher->plate, $lower->plate),
+                'customer' => $this->mergeValues($higher->customer, $lower->customer),
+                'driver' => $this->mergeValues($higher->driver, $lower->driver)
+            ]);
+
+            $this->measurementInterface->delete($lower->id);
+
+            return response()->json([
+                'status' => '201',
+                'message' => 'Scalowanie pomiarów przebiegło pomyślnie',
+                'measurement' => $measurement
+            ], 201);
         }
 
         return response()->json([
             'status' => '401',
             'error' => 'Bad request'
         ]);
+    }
+
+    protected function mergeValues($value1, $value2)
+    {
+        if ($value1 and empty($value2)) {
+            return $value1;
+        } else if (empty($value1) and $value2) {
+            return $value2;
+        } else if ($value1 == $value2) {
+            return $value1;
+        } else {
+            return $value1.', '.$value2;
+        }
     }
 
     public function detection()
