@@ -29,7 +29,7 @@ class MeasurementRepository implements MeasurementInterface
         if (isset($filters['unit']) and !empty($filters['unit'])) {
              $measurements->where('unit', 'like', '%'.$filters['unit'].'%');
         }
-
+        
         if (isset($filters['product']) and !empty($filters['product'])) {
             $measurements->where('product', 'like', '%'.$filters['product'].'%');
         }

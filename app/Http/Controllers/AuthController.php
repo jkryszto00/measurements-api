@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\UserResource;
 use App\Interfaces\UserInterface;
-use App\Models\User;
 use App\Services\AuthService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -42,17 +42,19 @@ class AuthController extends Controller
 
     public function profile()
     {
-        $user = Auth::user();
+        $user = Auth::user()->load('roles');
 
-        return response()->json([
-            'status' => '200',
-            'email' => $user->email,
-            'permissions' => $user->getPermissionsViaRoles()->map(function($permission) {
-                return [
-                    'id' => $permission->id,
-                    'name' => $permission->name
-                ];
-            }),
-        ]);
+        return response()->json(new UserResource($user));
+
+//        return response()->json([
+//            'status' => '200',
+//            'email' => $user->email,
+//            'permissions' => $user->getPermissionsViaRoles()->map(function($permission) {
+//                return [
+//                    'id' => $permission->id,
+//                    'name' => $permission->name
+//                ];
+//            }),
+//        ]);
     }
 }

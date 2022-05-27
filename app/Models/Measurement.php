@@ -10,18 +10,30 @@ class Measurement extends Model
     use SoftDeletes;
 
     protected $table = 'measurements';
+
     protected $fillable = [
-        'date',
         'unit',
         'netto',
         'brutto',
         'product',
-        'plate',
         'customer',
+        'plate',
         'driver',
         'modified_by_id',
         'notes'
     ];
+
+    public static function boot() {
+        parent::boot();
+
+        static::creating(function (Model $model) {
+            $model->modified_by_id = auth()->id();
+        });
+
+        static::updating(function (Model $model) {
+            $model->modified_by_id = auth()->id();
+        });
+    }
 
     public function attachments()
     {

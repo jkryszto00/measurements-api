@@ -6,6 +6,9 @@
     "type": "project",
     "require": {
         "php": "^7.3|^8.0",
+        "doctrine/dbal": "*",
+        "flipbox/lumen-generator": "^9.0",
+        "fruitcake/laravel-cors": "^3.0",
         "laravel/lumen-framework": "^8.3.1",
         "phpoffice/phpspreadsheet": "^1.20",
         "spatie/laravel-permission": "^5.4",

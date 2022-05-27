@@ -61,7 +61,7 @@ $app->singleton(
 
 $app->configure('app');
 $app->configure('permission');
-
+$app->configure('cors');
 /*
 |--------------------------------------------------------------------------
 | Register Middleware
@@ -74,7 +74,8 @@ $app->configure('permission');
 */
 
  $app->middleware([
-     App\Http\Middleware\CorsMiddleware::class,
+//     App\Http\Middleware\CorsMiddleware::class,
+    \Fruitcake\Cors\HandleCors::class
  ]);
 
  $app->routeMiddleware([
@@ -99,9 +100,10 @@ $app->configure('permission');
  $app->register(App\Providers\AuthServiceProvider::class);
 // $app->register(App\Providers\EventServiceProvider::class);
 $app->register(App\Providers\RepositoryServiceProvider::class);
-
+$app->register(Fruitcake\Cors\CorsServiceProvider::class);
 $app->register(Tymon\JWTAuth\Providers\LumenServiceProvider::class);
 $app->register(Spatie\Permission\PermissionServiceProvider::class);
+$app->register(Flipbox\LumenGenerator\LumenGeneratorServiceProvider::class);
 
 
 $app->alias('cache', \Illuminate\Cache\CacheManager::class);  // if you don't have this already

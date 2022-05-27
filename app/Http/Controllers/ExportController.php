@@ -19,7 +19,7 @@ class ExportController extends Controller
     {
         $spreadsheet = new Spreadsheet();
         $data = $this->prepareData(request()->only(
-            'from', 'to', 'unit', 'product', 'plate', 'customer', 'driver', 'trashed'
+            'from', 'to', 'unit', 'product', 'plate', 'customer', 'driver', 'status'
         ));
 
         $spreadsheet->getActiveSheet()
@@ -71,10 +71,10 @@ class ExportController extends Controller
             $data->where('driver', 'like', '%'.$filters['driver'].'%');
         }
 
-        if (isset($filters['trashed']) and !empty($filters['trashed'])) {
-            if ($filters['trashed'] == 'with') {
+        if (isset($filters['status']) and !empty($filters['status'])) {
+            if ($filters['status'] == 'all') {
                 $data->withTrashed();
-            } elseif ($filters['trashed'] == 'only') {
+            } elseif ($filters['status'] == 'trashed') {
                 $data->onlyTrashed();
             }
         }
