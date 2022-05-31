@@ -24,7 +24,7 @@ class MeasurementResource extends JsonResource
             'plate' => $this->plate ?? '',
             'driver' => $this->driver ?? '',
             'modified_by' => new UserResource($this->modifiedBy),
-//            'images' => ImageResource::collection($this->images),
+            'images' => ImageResource::collection($this->attachments),
             'notes' => $this->notes ?? '',
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
