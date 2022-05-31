@@ -15,7 +15,7 @@ class MeasurementController extends BaseController
     public function all(): JsonResponse
     {
         $perPage = (request()->get('perPage')) ? request()->get('perPage') : 25;
-        $measurements = Measurement::latest('id')->load('attachments');
+        $measurements = Measurement::with('attachments')->latest('id');
 
         if (request()->get('from') and !empty(request()->get('from'))) {
             $measurements->whereDate('created_at', '>=', new Carbon(request()->get('from')));
