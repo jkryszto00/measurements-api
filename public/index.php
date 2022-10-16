@@ -11,7 +11,7 @@
 |
 */
 
-$app = require __DIR__.'/../../wazenia-api/bootstrap/app.php';
+$app = require __DIR__.'/../bootstrap/app.php';
 
 /*
 |--------------------------------------------------------------------------

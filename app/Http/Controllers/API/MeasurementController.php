@@ -175,7 +175,10 @@ class MeasurementController extends BaseController
         return $this->handleResponse('', [
             'type' => $type,
             'query' => $query,
-            'suggestions' => Measurement::withTrashed()->where('netto', 0)->where($type, 'like', '%'.$query.'%')->distinct()->pluck($type)
+            'suggestions' => Measurement::withTrashed()->where([
+                ['netto', 0],
+                [$type, 'like', '%'.$query.'%']
+            ])->distinct()->pluck($type)
         ], 200);
     }
 
