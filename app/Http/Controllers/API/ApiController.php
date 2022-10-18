@@ -14,6 +14,13 @@ abstract class ApiController extends Controller
         ], $code);
     }
 
+    public function handleWithDataResponse(array $data, int $code): JsonResponse
+    {
+        return response()->json([
+            'data' => $data
+        ], $code);
+    }
+
     public function handleResponse(string $message, $data, int $code): JsonResponse
     {
         return response()->json([

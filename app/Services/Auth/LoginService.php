@@ -24,7 +24,7 @@ class LoginService
         return [
             'token' => $token,
             'token_type' => 'Bearer',
-            'expires_in' => Auth::factory()->getTTL() * 768
+            'expires_in' => Auth::factory()->getTTL() * 60
         ];
     }
 }

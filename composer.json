@@ -5,7 +5,7 @@
     "license": "MIT",
     "type": "project",
     "require": {
-        "php": "^7.3|^8.0",
+        "php": "8.0",
         "doctrine/dbal": "*",
         "flipbox/lumen-generator": "^9.0",
         "fruitcake/laravel-cors": "^3.0",
