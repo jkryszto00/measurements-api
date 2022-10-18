@@ -2,25 +2,28 @@
 
 namespace App\Http\Controllers\API\Auth;
 
-use App\Http\Controllers\API\BaseController;
-use App\Models\User;
+use App\Http\Controllers\API\ApiController;
+use App\Services\Auth\RegisterService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Http\Response;
 use Illuminate\Validation\Rules\Password;
 
-class RegisterController extends BaseController
+class RegisterController extends ApiController
 {
-    public function __invoke(Request $request): JsonResponse
+    public function __invoke(Request $request, RegisterService $registerService): JsonResponse
     {
-        $validated = $this->validate($request, [
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => ['required', 'confirmed', Password::defaults()]
-        ]);
+        try {
+            $validated = $this->validate($request, [
+                'email' => 'required|string|email|max:255|unique:users',
+                'password' => ['required', 'confirmed', Password::defaults()]
+            ]);
 
-        $validated['password'] = Hash::make($validated['password']);
-        User::create($validated);
+            $registerService->registerUser($validated['email'], $validated['password']);
 
-        return $this->handleResponse('Użytkownik zarejestrowany pomyślnie', [], 201);
+            return $this->handleWithMessageResponse('Użytkownik zarejestrowany pomyślnie', Response::HTTP_CREATED);
+        } catch (\Exception $e) {
+            return $this->handleErrorWithMessage('Coś poszło nie tak', Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 }
