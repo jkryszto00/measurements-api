@@ -2,15 +2,16 @@
 
 namespace App\Http\Controllers\API\Auth;
 
-use App\Http\Controllers\API\BaseController;
-use App\Http\Resources\UserResource;
+use App\Http\Controllers\API\ApiController;
+use App\Services\Auth\LoginService;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Validation\UnauthorizedException;
+use Illuminate\Http\Response;
 
-class LoginController extends BaseController
+class LoginController extends ApiController
 {
-    public function __invoke(Request $request): JsonResponse
+    public function __invoke(Request $request, LoginService $loginService): JsonResponse
     {
         $validated = $this->validate($request, [
             'email' => 'required|string|email',
@@ -18,19 +19,14 @@ class LoginController extends BaseController
         ]);
 
         try {
-            if (!$token = auth()->attempt($validated)) throw new UnauthorizedException('Unauthorized');
-            $user = auth()->user();
+            $token = $loginService->authenticate($validated['email'], $validated['password']);
+            $data = $loginService->getTokenInfo($token);
 
-            return $this->handleResponse('Użytkownia zalogowany pomyślnie!', [
-                'user' => new UserResource($user),
-                'access_token' => $token,
-                'token_type' => 'bearer',
-                'expires_in' => auth()->factory()->getTTL() * 60,
-            ], 200);
-        } catch (UnauthorizedException $e) {
-            return $this->handleError($e->getMessage(), [], 401);
+            return $this->handleResponse('Użytkownik zalogowany pomyślnie', $data, Response::HTTP_OK);
+        } catch (AuthenticationException $e) {
+            return $this->handleErrorWithMessage('Zły email lub hasło', Response::HTTP_UNAUTHORIZED);
         } catch (\Exception $e) {
-            return $this->handleError('Wystąpił błąd spróbuj ponownie później', [], 400);
+            return $this->handleErrorWithMessage('Coś poszło nie tak', Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 }
