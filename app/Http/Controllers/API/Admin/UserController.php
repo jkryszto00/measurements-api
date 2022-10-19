@@ -28,6 +28,17 @@ class UserController extends ApiController
         }
     }
 
+    public function show(User $user): JsonResponse
+    {
+        try {
+            return $this->handleWithDataResponse((array) new UserResource($user), Response::HTTP_OK);
+        } catch (ModelNotFoundException $e) {
+            return $this->handleErrorWithMessage('User not found', Response::HTTP_NOT_FOUND);
+        } catch (\Exception $e) {
+            return $this->handleErrorWithMessage('Something went wrong', Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
     public function store(Request $request): JsonResponse
     {
         try {
@@ -44,17 +55,6 @@ class UserController extends ApiController
             }
 
             return $this->handleResponse('User created', (array) new UserResource($user), Response::HTTP_CREATED);
-        } catch (\Exception $e) {
-            return $this->handleErrorWithMessage('Something went wrong', Response::HTTP_INTERNAL_SERVER_ERROR);
-        }
-    }
-
-    public function show(User $user): JsonResponse
-    {
-        try {
-            return $this->handleWithDataResponse((array) new UserResource($user), Response::HTTP_OK);
-        } catch (ModelNotFoundException $e) {
-            return $this->handleErrorWithMessage('User not found', Response::HTTP_NOT_FOUND);
         } catch (\Exception $e) {
             return $this->handleErrorWithMessage('Something went wrong', Response::HTTP_INTERNAL_SERVER_ERROR);
         }
