@@ -4,6 +4,7 @@ namespace App\Http\Controllers\API\Admin;
 
 use App\Http\Controllers\API\ApiController;
 use App\Http\Resources\RoleResource;
+use App\Services\User\RoleService;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -12,6 +13,10 @@ use Spatie\Permission\Models\Role;
 
 class RoleController extends ApiController
 {
+    public function __construct(
+        private RoleService $roleService
+    ) {}
+
     public function index(): JsonResponse
     {
         try {
@@ -37,10 +42,12 @@ class RoleController extends ApiController
     {
         try {
             $validated = $this->validate($request, [
-                'name' => 'required|string|unique:roles'
+                'name' => 'required|string|unique:roles',
+                'permissions' => 'required|array',
+                'permissions.*' => 'required|string'
             ]);
 
-            $role = Role::create($validated);
+            $role = $this->roleService->createRole($validated);
 
             return $this->handleResponse('Role created', (array) new RoleResource($role), Response::HTTP_CREATED);
         } catch (\Exception $e) {
@@ -52,10 +59,12 @@ class RoleController extends ApiController
     {
         try {
             $validated = $this->validate($request, [
-                'name' => 'required|string|unique:roles'
+                'name' => 'required|string|unique:roles',
+                'permissions' => 'required|array',
+                'permissions.*' => 'required|string'
             ]);
 
-            $role->update($validated);
+            $this->roleService->updateRole($role, $validated);
 
             return $this->handleResponse('Role updated', (array)new RoleResource($role), Response::HTTP_CREATED);
         } catch (ModelNotFoundException $e) {
@@ -68,7 +77,7 @@ class RoleController extends ApiController
     public function delete(Role $role): JsonResponse
     {
         try {
-            $role->delete();
+            $this->roleService->deleteRole($role);
             return $this->handleWithMessageResponse('Role deleted', Response::HTTP_OK);
         } catch (ModelNotFoundException) {
             return $this->handleErrorWithMessage('Role not found', Response::HTTP_NOT_FOUND);
