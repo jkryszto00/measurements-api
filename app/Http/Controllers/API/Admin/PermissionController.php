@@ -4,6 +4,7 @@ namespace App\Http\Controllers\API\Admin;
 
 use App\Http\Controllers\API\ApiController;
 use App\Http\Resources\PermissionResource;
+use App\Services\User\PermissionService;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -12,6 +13,10 @@ use Spatie\Permission\Models\Permission;
 
 class PermissionController extends ApiController
 {
+    public function __construct(
+        private PermissionService $permissionService
+    ) {}
+
     public function index(): JsonResponse
     {
         try {
@@ -37,10 +42,10 @@ class PermissionController extends ApiController
     {
         try {
             $validated = $this->validate($request, [
-                'name' => 'required|string|unique:roles'
+                'name' => 'required|string|unique:permissions'
             ]);
 
-            $permission = Permission::create($validated);
+            $permission = $this->permissionService->createPermission($validated);
 
             return $this->handleResponse('Permission created', (array) new PermissionResource($permission), Response::HTTP_CREATED);
         } catch (\Exception $e) {
@@ -55,7 +60,7 @@ class PermissionController extends ApiController
                 'name' => 'required|string|unique:roles'
             ]);
 
-            $permission->update($validated);
+            $permission = $this->permissionService->updatePermission($permission, $validated);
 
             return $this->handleResponse('Permission updated', (array)new PermissionResource($permission), Response::HTTP_CREATED);
         } catch (ModelNotFoundException $e) {
@@ -68,7 +73,8 @@ class PermissionController extends ApiController
     public function delete(Permission $permission): JsonResponse
     {
         try {
-            $permission->delete();
+            $this->permissionService->deletepPermission($permission);
+
             return $this->handleWithMessageResponse('Permission deleted', Response::HTTP_OK);
         } catch (ModelNotFoundException) {
             return $this->handleErrorWithMessage('Permission not found', Response::HTTP_NOT_FOUND);
