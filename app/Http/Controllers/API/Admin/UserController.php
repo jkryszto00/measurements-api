@@ -21,7 +21,7 @@ class UserController extends ApiController
     public function index(): JsonResponse
     {
         try {
-            $users = User::all();
+            $users = User::all()->load('roles');
             return $this->handleWithDataResponse((array) UserResource::collection($users), Response::HTTP_OK);
         } catch (\Exception $e) {
             return $this->handleErrorWithMessage('Something went wrong', Response::HTTP_INTERNAL_SERVER_ERROR);
@@ -31,6 +31,7 @@ class UserController extends ApiController
     public function show(User $user): JsonResponse
     {
         try {
+            $user->load('roles');
             return $this->handleWithDataResponse((array) new UserResource($user), Response::HTTP_OK);
         } catch (ModelNotFoundException $e) {
             return $this->handleErrorWithMessage('User not found', Response::HTTP_NOT_FOUND);
@@ -54,6 +55,8 @@ class UserController extends ApiController
                 $user = $this->userService->createUserWithRoles($validated);
             }
 
+            $user->load('roles');
+
             return $this->handleResponse('User created', (array) new UserResource($user), Response::HTTP_CREATED);
         } catch (\Exception $e) {
             return $this->handleErrorWithMessage('Something went wrong', Response::HTTP_INTERNAL_SERVER_ERROR);
@@ -69,6 +72,7 @@ class UserController extends ApiController
             ]);
 
             $this->userService->updateUser($user, $validated);
+            $user->load('roles');
 
             return $this->handleResponse('User updated', (array) new UserResource($user), Response::HTTP_OK);
         } catch (ModelNotFoundException $e) {

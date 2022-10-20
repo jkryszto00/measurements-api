@@ -30,6 +30,7 @@ class RoleController extends ApiController
     public function show(Role $role): JsonResponse
     {
         try {
+            $role->load('permissions');
             return $this->handleWithDataResponse((array) new RoleResource($role), Response::HTTP_OK);
         } catch (ModelNotFoundException $e) {
             return $this->handleErrorWithMessage('Role not found', Response::HTTP_NOT_FOUND);
@@ -48,7 +49,7 @@ class RoleController extends ApiController
             ]);
 
             $role = $this->roleService->createRole($validated);
-
+            $role->load('permissions');
             return $this->handleResponse('Role created', (array) new RoleResource($role), Response::HTTP_CREATED);
         } catch (\Exception $e) {
             return $this->handleErrorWithMessage('Something went wrong', Response::HTTP_INTERNAL_SERVER_ERROR);
@@ -65,6 +66,7 @@ class RoleController extends ApiController
             ]);
 
             $this->roleService->updateRole($role, $validated);
+            $role->load('permissions');
 
             return $this->handleResponse('Role updated', (array)new RoleResource($role), Response::HTTP_CREATED);
         } catch (ModelNotFoundException $e) {
