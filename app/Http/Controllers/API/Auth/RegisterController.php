@@ -2,25 +2,33 @@
 
 namespace App\Http\Controllers\API\Auth;
 
-use App\Http\Controllers\API\BaseController;
-use App\Models\User;
+use App\Http\Controllers\API\ApiController;
+use App\Services\User\UserService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Http\Response;
 use Illuminate\Validation\Rules\Password;
+use Illuminate\Validation\ValidationException;
 
-class RegisterController extends BaseController
+class RegisterController extends ApiController
 {
-    public function __invoke(Request $request): JsonResponse
+    public function __invoke(Request $request,  UserService $userService): JsonResponse
     {
-        $validated = $this->validate($request, [
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => ['required', 'confirmed', Password::defaults()]
-        ]);
+        try {
+            $validated = $this->validate($request, [
+                'email' => 'required|string|email|max:255|unique:users',
+                'password' => ['required', 'confirmed', Password::defaults()]
+            ]);
 
-        $validated['password'] = Hash::make($validated['password']);
-        User::create($validated);
+            $validated['roles'] = ['user'];
 
-        return $this->handleResponse('Użytkownik zarejestrowany pomyślnie', [], 201);
+            $userService->createUserWithRoles($validated);
+
+            return $this->handleWithMessageResponse('User created', Response::HTTP_CREATED);
+        } catch (ValidationException $e) {
+            return $this->handleError($e->getMessage(), $e->errors(), Response::HTTP_UNPROCESSABLE_ENTITY);
+        } catch (\Exception $e) {
+            return $this->handleErrorWithMessage($e->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 }

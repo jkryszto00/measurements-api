@@ -2,35 +2,34 @@
 
 namespace App\Http\Controllers\API\Auth;
 
-use App\Http\Controllers\API\BaseController;
-use App\Http\Resources\UserResource;
+use App\Http\Controllers\API\ApiController;
+use App\Services\Auth\LoginService;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Validation\UnauthorizedException;
+use Illuminate\Http\Response;
+use Illuminate\Validation\ValidationException;
 
-class LoginController extends BaseController
+class LoginController extends ApiController
 {
-    public function __invoke(Request $request): JsonResponse
+    public function __invoke(Request $request, LoginService $loginService): JsonResponse
     {
-        $validated = $this->validate($request, [
-            'email' => 'required|string|email',
-            'password' => 'required|string'
-        ]);
-
         try {
-            if (!$token = auth()->attempt($validated)) throw new UnauthorizedException('Unauthorized');
-            $user = auth()->user();
+            $validated = $this->validate($request, [
+                'email' => 'required|string|email',
+                'password' => 'required|string'
+            ]);
 
-            return $this->handleResponse('Użytkownia zalogowany pomyślnie!', [
-                'user' => new UserResource($user),
-                'access_token' => $token,
-                'token_type' => 'bearer',
-                'expires_in' => auth()->factory()->getTTL() * 60,
-            ], 200);
-        } catch (UnauthorizedException $e) {
-            return $this->handleError($e->getMessage(), [], 401);
+            $token = $loginService->authenticate($validated['email'], $validated['password']);
+            $data = $loginService->getTokenInfo($token);
+
+            return $this->handleResponse('User login successful', $data, Response::HTTP_OK);
+        } catch (ValidationException $e) {
+            return $this->handleError($e->getMessage(), $e->errors(), Response::HTTP_UNPROCESSABLE_ENTITY);
+        } catch (AuthenticationException $e) {
+            return $this->handleErrorWithMessage($e->getMessage(), Response::HTTP_UNAUTHORIZED);
         } catch (\Exception $e) {
-            return $this->handleError('Wystąpił błąd spróbuj ponownie później', [], 400);
+            return $this->handleErrorWithMessage($e->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 }

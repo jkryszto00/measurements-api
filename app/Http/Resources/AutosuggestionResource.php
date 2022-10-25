@@ -4,7 +4,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class PermissionResource extends JsonResource
+class AutosuggestionResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -15,7 +15,9 @@ class PermissionResource extends JsonResource
     public function toArray($request)
     {
         return [
-            'name' => $this->name
+            'type' => $this->type,
+            'query' => $this->query,
+            'suggestions' => $this->suggestions
         ];
     }
 }

@@ -17,8 +17,8 @@ class CreateMeasurementsTable extends Migration
             $table->id();
             $table->dateTime('date');
             $table->string('unit');
-            $table->integer('netto')->nullable();
-            $table->integer('brutto')->nullable();
+            $table->integer('netto')->default(0);
+            $table->integer('brutto')->default(0);
             $table->string('product');
             $table->string('plate')->nullable();
             $table->string('customer')->nullable();
