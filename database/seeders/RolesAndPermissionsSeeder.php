@@ -21,21 +21,12 @@ class RolesAndPermissionsSeeder extends Seeder
 
         $roles = ['admin', 'user'];
         $permissions = [
-            'show measurements',
-            'create measurements',
-            'update measurements',
-            'delete measurements',
+            'crud measurements',
             'merge measurements',
             'export measurements',
-            'show users',
-            'create users',
-            'update users',
-            'delete users',
-            'show roles',
-            'create roles',
-            'update roles',
-            'delete roles',
-            'show permissions'
+            'crud users',
+            'crud roles',
+            'crud permissions'
         ];
 
         foreach ($roles as $role) {

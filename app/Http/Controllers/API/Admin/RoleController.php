@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Validation\ValidationException;
 use Spatie\Permission\Models\Role;
 
 class RoleController extends ApiController
@@ -21,21 +22,21 @@ class RoleController extends ApiController
     {
         try {
             $roles = Role::all();
-            return $this->handleWithDataResponse((array) RoleResource::collection($roles), Response::HTTP_OK);
+            return $this->handleWithDataResponse(RoleResource::collection($roles), Response::HTTP_OK);
         } catch (\Exception $e) {
-            return $this->handleErrorWithMessage('Something went wrong', Response::HTTP_INTERNAL_SERVER_ERROR);
+            return $this->handleErrorWithMessage($e->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
-    public function show(Role $role): JsonResponse
+    public function show(int $id): JsonResponse
     {
         try {
-            $role->load('permissions');
-            return $this->handleWithDataResponse((array) new RoleResource($role), Response::HTTP_OK);
-        } catch (ModelNotFoundException $e) {
+            $role = Role::with('permissions')->findOrFail($id);
+            return $this->handleWithDataResponse(new RoleResource($role), Response::HTTP_OK);
+        } catch (ModelNotFoundException) {
             return $this->handleErrorWithMessage('Role not found', Response::HTTP_NOT_FOUND);
         } catch (\Exception $e) {
-            return $this->handleErrorWithMessage('Something went wrong', Response::HTTP_INTERNAL_SERVER_ERROR);
+            return $this->handleErrorWithMessage($e->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -49,14 +50,15 @@ class RoleController extends ApiController
             ]);
 
             $role = $this->roleService->createRole($validated);
-            $role->load('permissions');
-            return $this->handleResponse('Role created', (array) new RoleResource($role), Response::HTTP_CREATED);
+            return $this->handleResponse('Role created', new RoleResource($role), Response::HTTP_CREATED);
+        } catch (ValidationException $e) {
+            return $this->handleError($e->getMessage(), $e->errors(), Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch (\Exception $e) {
-            return $this->handleErrorWithMessage('Something went wrong', Response::HTTP_INTERNAL_SERVER_ERROR);
+            return $this->handleErrorWithMessage($e->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
-    public function update(Role $role, Request $request): JsonResponse
+    public function update(int $id, Request $request): JsonResponse
     {
         try {
             $validated = $this->validate($request, [
@@ -65,26 +67,30 @@ class RoleController extends ApiController
                 'permissions.*' => 'required|string'
             ]);
 
+            $role = Role::with('permissions')->findOrFail($id);
             $this->roleService->updateRole($role, $validated);
-            $role->load('permissions');
 
-            return $this->handleResponse('Role updated', (array)new RoleResource($role), Response::HTTP_CREATED);
-        } catch (ModelNotFoundException $e) {
+            return $this->handleResponse('Role updated', new RoleResource($role), Response::HTTP_CREATED);
+        } catch (ValidationException $e) {
+            return $this->handleError($e->getMessage(), $e->errors(), Response::HTTP_UNPROCESSABLE_ENTITY);
+        } catch (ModelNotFoundException) {
             return $this->handleErrorWithMessage('Role not found', Response::HTTP_NOT_FOUND);
         } catch (\Exception $e) {
-            return $this->handleErrorWithMessage('Something went wrong', Response::HTTP_INTERNAL_SERVER_ERROR);
+            return $this->handleErrorWithMessage($e->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
-    public function delete(Role $role): JsonResponse
+    public function delete(int $id): JsonResponse
     {
         try {
+            $role = Role::findOrFail($id);
             $this->roleService->deleteRole($role);
+
             return $this->handleWithMessageResponse('Role deleted', Response::HTTP_OK);
         } catch (ModelNotFoundException) {
             return $this->handleErrorWithMessage('Role not found', Response::HTTP_NOT_FOUND);
-        } catch (\Exception) {
-            return $this->handleErrorWithMessage('Something went wrong', Response::HTTP_INTERNAL_SERVER_ERROR);
+        } catch (\Exception $e) {
+            return $this->handleErrorWithMessage($e->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 }

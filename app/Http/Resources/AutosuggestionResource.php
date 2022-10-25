@@ -4,7 +4,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class ImageResource extends JsonResource
+class AutosuggestionResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -15,8 +15,9 @@ class ImageResource extends JsonResource
     public function toArray($request)
     {
         return [
-            'id' => $request->id,
-            'source_url' => $this->url
+            'type' => $this->type,
+            'query' => $this->query,
+            'suggestions' => $this->suggestions
         ];
     }
 }

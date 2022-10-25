@@ -2,10 +2,12 @@
 
 namespace App\Http\Middleware;
 
+use App\Http\Controllers\API\ApiController;
 use Closure;
 use Illuminate\Contracts\Auth\Factory as Auth;
+use Illuminate\Http\Response;
 
-class Authenticate
+class Authenticate extends ApiController
 {
     /**
      * The authentication guard factory instance.
@@ -36,10 +38,7 @@ class Authenticate
     public function handle($request, Closure $next, $guard = null)
     {
         if ($this->auth->guard($guard)->guest()) {
-            return response()->json([
-                'status' => 401,
-                'error' => 'Unauthorized.'
-            ], 401);
+            $this->handleErrorWithMessage('Unauthorized', Response::HTTP_UNAUTHORIZED);
         }
 
         return $next($request);

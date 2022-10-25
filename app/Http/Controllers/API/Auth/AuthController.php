@@ -17,9 +17,9 @@ class AuthController extends ApiController
     public function user(): JsonResponse
     {
         try {
-            return $this->handleWithDataResponse((array) new UserResource($this->authService->user()), Response::HTTP_OK);
+            return $this->handleWithDataResponse(new UserResource($this->authService->user()), Response::HTTP_OK);
         } catch (\Exception $e) {
-            return $this->handleErrorWithMessage('Coś poszło nie tak', Response::HTTP_INTERNAL_SERVER_ERROR);
+            return $this->handleErrorWithMessage($e->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -28,7 +28,7 @@ class AuthController extends ApiController
         try {
             return $this->handleWithDataResponse($this->authService->refresh(), Response::HTTP_OK);
         } catch (\Exception $e) {
-            return $this->handleErrorWithMessage('Coś poszło nie tak', Response::HTTP_INTERNAL_SERVER_ERROR);
+            return $this->handleErrorWithMessage($e->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -36,9 +36,9 @@ class AuthController extends ApiController
     {
         try {
             $this->authService->logout();
-            return $this->handleWithMessageResponse('Użytkownik wylogowany pomyślnie', Response::HTTP_OK);
+            return $this->handleWithMessageResponse('User logged out successful', Response::HTTP_OK);
         } catch (\Exception $e) {
-            return $this->handleErrorWithMessage('Coś poszło nie tak', Response::HTTP_INTERNAL_SERVER_ERROR);
+            return $this->handleErrorWithMessage($e->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 }

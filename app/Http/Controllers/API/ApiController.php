@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers\API;
 
-use App\Http\Controllers\Controller;
+use Laravel\Lumen\Routing\Controller as BaseController;
 use Illuminate\Http\JsonResponse;
 
-abstract class ApiController extends Controller
+abstract class ApiController extends BaseController
 {
     public function handleWithMessageResponse(string $message, int $code): JsonResponse
     {
@@ -14,14 +14,14 @@ abstract class ApiController extends Controller
         ], $code);
     }
 
-    public function handleWithDataResponse(array $data, int $code): JsonResponse
+    public function handleWithDataResponse(mixed $data, int $code): JsonResponse
     {
         return response()->json([
             'data' => $data
         ], $code);
     }
 
-    public function handleResponse(string $message, $data, int $code): JsonResponse
+    public function handleResponse(string $message, mixed $data, int $code): JsonResponse
     {
         return response()->json([
             'message' => $message,
@@ -36,11 +36,11 @@ abstract class ApiController extends Controller
         ], $code);
     }
 
-    public function handleError(string $error, $errors, int $code): JsonResponse
+    public function handleError(string $error, mixed $errors, int $code): JsonResponse
     {
         return response()->json([
-            'errors' => $errors,
             'error' => $error,
+            'errors' => $errors,
         ], $code);
     }
 }

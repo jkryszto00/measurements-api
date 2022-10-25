@@ -27,8 +27,13 @@ class UserService
     {
         $user->update($attributes);
 
-        if ($attributes['roles']) {
+        if (!empty($attributes['roles'])) {
             $user->syncRoles($attributes['roles']);
         }
+    }
+
+    public function deleteUser(User $user): void
+    {
+        $user->delete();
     }
 }

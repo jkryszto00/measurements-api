@@ -11,6 +11,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Validation\Rules\Password;
+use Illuminate\Validation\ValidationException;
 
 class UserController extends ApiController
 {
@@ -21,22 +22,22 @@ class UserController extends ApiController
     public function index(): JsonResponse
     {
         try {
-            $users = User::all()->load('roles');
-            return $this->handleWithDataResponse((array) UserResource::collection($users), Response::HTTP_OK);
+            $users = User::with('roles')->get();
+            return $this->handleWithDataResponse(UserResource::collection($users), Response::HTTP_OK);
         } catch (\Exception $e) {
-            return $this->handleErrorWithMessage('Something went wrong', Response::HTTP_INTERNAL_SERVER_ERROR);
+            return $this->handleErrorWithMessage($e->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
-    public function show(User $user): JsonResponse
+    public function show(int $id): JsonResponse
     {
         try {
-            $user->load('roles');
-            return $this->handleWithDataResponse((array) new UserResource($user), Response::HTTP_OK);
-        } catch (ModelNotFoundException $e) {
+            $user = User::with('roles')->findOrFail($id);
+            return $this->handleWithDataResponse(new UserResource($user), Response::HTTP_OK);
+        } catch (ModelNotFoundException) {
             return $this->handleErrorWithMessage('User not found', Response::HTTP_NOT_FOUND);
         } catch (\Exception $e) {
-            return $this->handleErrorWithMessage('Something went wrong', Response::HTTP_INTERNAL_SERVER_ERROR);
+            return $this->handleErrorWithMessage($e->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -57,13 +58,15 @@ class UserController extends ApiController
 
             $user->load('roles');
 
-            return $this->handleResponse('User created', (array) new UserResource($user), Response::HTTP_CREATED);
+            return $this->handleResponse('User created', new UserResource($user), Response::HTTP_CREATED);
+        } catch (ValidationException $e) {
+            return $this->handleError($e->getMessage(), $e->errors(), Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch (\Exception $e) {
-            return $this->handleErrorWithMessage('Something went wrong', Response::HTTP_INTERNAL_SERVER_ERROR);
+            return $this->handleErrorWithMessage($e->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
-    public function update(User $user, Request $request): JsonResponse
+    public function update(int $id, Request $request): JsonResponse
     {
         try {
             $validated = $this->validate($request, [
@@ -71,26 +74,30 @@ class UserController extends ApiController
                 'roles' => 'nullable|array'
             ]);
 
+            $user = User::findOrFail($id);
             $this->userService->updateUser($user, $validated);
-            $user->load('roles');
 
-            return $this->handleResponse('User updated', (array) new UserResource($user), Response::HTTP_OK);
-        } catch (ModelNotFoundException $e) {
+            return $this->handleResponse('User updated', new UserResource($user), Response::HTTP_OK);
+        } catch (ModelNotFoundException) {
             return $this->handleErrorWithMessage('User not found', Response::HTTP_NOT_FOUND);
+        } catch (ValidationException $e) {
+            return $this->handleError($e->getMessage(), $e->errors(), Response::HTTP_UNPROCESSABLE_ENTITY);
         } catch (\Exception $e) {
-            return $this->handleErrorWithMessage('Something went wrong', Response::HTTP_INTERNAL_SERVER_ERROR);
+            return $this->handleErrorWithMessage($e->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
-    public function delete(User $user): JsonResponse
+    public function delete(int $id): JsonResponse
     {
         try {
-            $user->delete();
+            $user = User::findOrFail($id);
+            $this->userService->deleteUser($user);
+
             return $this->handleWithMessageResponse('User deleted', Response::HTTP_OK);
         } catch (ModelNotFoundException) {
             return $this->handleErrorWithMessage('User not found', Response::HTTP_NOT_FOUND);
-        } catch (\Exception) {
-            return $this->handleErrorWithMessage('Something went wrong', Response::HTTP_INTERNAL_SERVER_ERROR);
+        } catch (\Exception $e) {
+            return $this->handleErrorWithMessage($e->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 }
